@@ -77,21 +77,21 @@ public class Checker {
 //            def m = receiver.metaClass.getMetaMethod(method.toString(),args)
 //            return m.invoke(receiver,args);
 
-            /*
-                When Groovy evaluates expression like "FooClass.bar()", it routes the call here.
-                (as to why we cannot rewrite the expression to statically route the call to checkedStaticCall,
-                consider "def x = FooClass.class; x.bar()", which still resolves to FooClass.bar() if it is present!)
+		/*
+			When Groovy evaluates expression like "FooClass.bar()", it routes the call here.
+			(as to why we cannot rewrite the expression to statically route the call to checkedStaticCall,
+			consider "def x = FooClass.class; x.bar()", which still resolves to FooClass.bar() if it is present!)
 
-                So this is where we really need to distinguish a call to a static method defined on the class
-                vs an instance method call to a method on java.lang.Class.
+			So this is where we really need to distinguish a call to a static method defined on the class
+			vs an instance method call to a method on java.lang.Class.
 
-                Then the question is how do we know when to do which, which one takes precedence, etc.
-                Groovy doesn't commit to any specific logic at the level of MetaClass. In MetaClassImpl,
-                the logic is defined in MetaClassImpl.pickStaticMethod.
+			Then the question is how do we know when to do which, which one takes precedence, etc.
+			Groovy doesn't commit to any specific logic at the level of MetaClass. In MetaClassImpl,
+			the logic is defined in MetaClassImpl.pickStaticMethod.
 
-                BTW, this makes me wonder if StaticMethodCallExpression is used at all in AST, and it looks like
-                this is no longer used.
-             */
+			BTW, this makes me wonder if StaticMethodCallExpression is used at all in AST, and it looks like
+			this is no longer used.
+		*/
 
 			if (_receiver instanceof Class) {
 				MetaClass mc = getMetaClass((Class) _receiver);
@@ -158,19 +158,19 @@ public class Checker {
 				}
 			}
 
-            /*
-                The third try:
+			/*
+			The third try:
 
-                Groovyc produces one CallSites instance per a call site, then
-                pack them into a single array and put them as a static field in a class.
-                this encapsulates the actual method dispatching logic.
+			Groovyc produces one CallSites instance per a call site, then
+			pack them into a single array and put them as a static field in a class.
+			this encapsulates the actual method dispatching logic.
 
-                Ideally we'd like to get the CallSite object that would have been used for a call,
-                but because it's packed in an array and the index in that array is determined
-                only at the code generation time, I can't get the access to it.
+			Ideally we'd like to get the CallSite object that would have been used for a call,
+			but because it's packed in an array and the index in that array is determined
+			only at the code generation time, I can't get the access to it.
 
-                So here we are faking it by creating a new CallSite object.
-             */
+			So here we are faking it by creating a new CallSite object.
+			*/
 			return new VarArgInvokerChain(_receiver) {
 				public Object call(Object receiver, String method, Object... args) throws Throwable {
 					if (chain.hasNext())
@@ -350,10 +350,10 @@ public class Checker {
 			throw new MissingPropertyException(_property.toString(), _receiver.getClass());
 		}
 		if (_receiver instanceof Map) {
-            /*
-                MetaClassImpl.getProperty looks for Map subtype and handles it as Map.get call,
-                so dispatch that call accordingly.
-             */
+			/*
+			MetaClassImpl.getProperty looks for Map subtype and handles it as Map.get call,
+			so dispatch that call accordingly.
+			*/
 			if (((Map) _receiver).containsKey(_property)) {
 				return checkedCall(_receiver, false, false, "get", new Object[]{_property});
 			}
@@ -439,10 +439,10 @@ public class Checker {
 			throw new MissingPropertyException(_property.toString(), _receiver.getClass());
 		}
 		if (_receiver instanceof Map) {
-            /*
-                MetaClassImpl.setProperty looks for Map subtype and handles it as Map.put call,
-                so dispatch that call accordingly.
-             */
+		/*
+		MetaClassImpl.setProperty looks for Map subtype and handles it as Map.put call,
+		so dispatch that call accordingly.
+		*/
 			checkedCall(_receiver, false, false, "put", new Object[]{_property, _value});
 			return _value;
 		}

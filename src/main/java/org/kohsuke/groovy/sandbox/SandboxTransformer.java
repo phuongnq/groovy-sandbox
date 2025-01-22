@@ -162,24 +162,24 @@ public class SandboxTransformer extends CompilationCustomizer {
 	public void forbidIfFinalizer(MethodNode m) {
 		if (m.getName().equals("finalize") && m.isVoidMethod() && !m.isPrivate() && !m.isStatic()) {
 			boolean safe = false;
-            /*
-            Groovy allows method definitions to specify default arguments for parameters. Parameters with default
-            arguments may be omitted when calling the method. Groovy implements this by generating additional
-            overloaded methods in bytecode for each variation of the method being omitted.
-            For example, given the following method:
+		/*
+		Groovy allows method definitions to specify default arguments for parameters. Parameters with default
+		arguments may be omitted when calling the method. Groovy implements this by generating additional
+		overloaded methods in bytecode for each variation of the method being omitted.
+		For example, given the following method:
 
-                public void finalize(int x = 0) { }
+		public void finalize(int x = 0) { }
 
-            Groovy will generate 2 methods in bytecode:
+		Groovy will generate 2 methods in bytecode:
 
-                public void finalize(int x) { }
-                public void finalize() { finalize(0) }
+		public void finalize(int x) { }
+		public void finalize() { finalize(0) }
 
-            Our AST transformer will not see the generated no-arg method which overrides Object#finalize, so we need
-            to account for it by ensuring that at least one parameter does not have a default argument (AKA initial
-            expression) for the method to be acceptable, because parameters without default arguments will exist in all
-            generated methods.
-            */
+		Our AST transformer will not see the generated no-arg method which overrides Object#finalize, so we need
+		to account for it by ensuring that at least one parameter does not have a default argument (AKA initial
+		expression) for the method to be acceptable, because parameters without default arguments will exist in all
+		generated methods.
+		*/
 			for (Parameter p : m.getParameters()) {
 				if (!p.hasInitialExpression()) {
 					safe = true;
@@ -501,13 +501,13 @@ public class SandboxTransformer extends CompilationCustomizer {
 			}
 
 			if (exp instanceof StaticMethodCallExpression && interceptMethodCall) {
-                /*
-                    Groovy doesn't use StaticMethodCallExpression as much as it could in compilation.
-                    For example, "Math.max(1,2)" results in a regular MethodCallExpression.
+			/*
+				Groovy doesn't use StaticMethodCallExpression as much as it could in compilation.
+				For example, "Math.max(1,2)" results in a regular MethodCallExpression.
 
-                    Static import handling uses StaticMethodCallExpression, and so are some
-                    ASTTransformations like ToString,EqualsAndHashCode, etc.
-                 */
+				Static import handling uses StaticMethodCallExpression, and so are some
+				ASTTransformations like ToString,EqualsAndHashCode, etc.
+			 */
 				StaticMethodCallExpression call = (StaticMethodCallExpression) exp;
 				return makeCheckedCall("checkedStaticCall",
 					new ClassExpression(call.getOwnerType()),
