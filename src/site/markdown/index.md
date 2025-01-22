@@ -37,7 +37,9 @@ See the [robot example](https://github.com/jenkinsci/groovy-sandbox/tree/master/
 for a complete example.
 
 # Considerations
+
 ## Interceptors are thread specific
+
 You can register multiple interceptors, but they are all local to a thread.
 This allows multi-threaded applications to isolate execution properly, but it also means you cannot
 let the sandbox script create threads, or else it'll escape the sandbox.
@@ -47,6 +49,7 @@ is to ensure you prohibit the use of `Thread` as the receiver, and prevent the s
 accessing `Executor`-like services that let closures executed on different threads.
 
 ## No blacklisting
+
 Unlikes a sandbox provided by Java `SecurityManager`, this sandboxing is only a skin deep.
 In other words, even if you prohibit a script from executing an operation X, if an attacker finds another method Y
 that calls into X, he can execute X.
@@ -55,6 +58,7 @@ This in practice means you have to whitelist what's OK, as opposed to blacklist 
 because you'll never know all the static methods that are available to the script in the JVM!
 
 ## Reflection
+
 Access to reflection almost always need to be blocked, or else a script can escape a sandbox by invoking
 arbitrary methods on arbitrary objects, or remove the interceptor that you have installed.
 

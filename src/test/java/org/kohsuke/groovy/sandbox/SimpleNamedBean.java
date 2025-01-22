@@ -25,13 +25,13 @@
 package org.kohsuke.groovy.sandbox;
 
 public class SimpleNamedBean {
-    private String name;
+	private String name;
 
-    public SimpleNamedBean(String n) {
-        this.name = n;
-    }
+	public SimpleNamedBean(String n) {
+		this.name = n;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public String getName() {
+		return name;
+	}
 }

@@ -6,6 +6,7 @@ Compile-time transformer to run Groovy code in a restrictive sandbox. Executes u
 [Documentation](http://groovy-sandbox.kohsuke.org/).
 
 #### Maven dependency
+
 ```xml
 <dependency>
     <groupId>org.kohsuke</groupId>
@@ -15,6 +16,7 @@ Compile-time transformer to run Groovy code in a restrictive sandbox. Executes u
 ```
 
 Starting with version 1.20, this artifact is only published to the Jenkins Releases repository, not to Maven Central as was done previously. Here are the details for the Jenkins Releases repository:
+
 ```xml
 <repository>
   <id>jenkins-releases</id>
@@ -24,6 +26,7 @@ Starting with version 1.20, this artifact is only published to the Jenkins Relea
 ```
 
 #### Usage
+
 A good example can be found [here](https://github.com/jenkinsci/groovy-sandbox/tree/master/src/test/groovy/org/kohsuke/groovy/sandbox/robot).
 This is a simple test that always expects a `SecurityException`:
 
@@ -43,14 +46,19 @@ class Test {
 ```
 
 # Community
+
 ## Contributors
+
 https://github.com/craftercms/craftercms/blob/develop/CONTRIBUTORS.md
 
 ## Code of Conduct
+
 https://github.com/craftercms/craftercms/blob/develop/CODE_OF_CONDUCT.md
 
 ## Contributing
+
 https://github.com/craftercms/craftercms/blob/develop/CONTRIBUTING.md
 
 ## Git Workflow
+
 https://github.com/craftercms/craftercms/blob/develop/GIT_WORKFLOW.md

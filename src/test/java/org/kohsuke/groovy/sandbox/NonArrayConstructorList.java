@@ -31,12 +31,12 @@ import java.util.ArrayList;
  * Used in {@link TheTest#testCheckedCastWhenAssignable()} - couldn't be an inner class due to gmaven issues.
  */
 public class NonArrayConstructorList extends ArrayList<String> {
-    public NonArrayConstructorList(boolean choiceOne, boolean choiceTwo) {
-        if (choiceOne) {
-            this.add("one");
-        }
-        if (choiceTwo) {
-            this.add("two");
-        }
-    }
+	public NonArrayConstructorList(boolean choiceOne, boolean choiceTwo) {
+		if (choiceOne) {
+			this.add("one");
+		}
+		if (choiceTwo) {
+			this.add("two");
+		}
+	}
 }

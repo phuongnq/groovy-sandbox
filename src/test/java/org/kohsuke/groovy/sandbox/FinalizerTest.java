@@ -41,121 +41,121 @@ import static org.junit.Assert.fail;
 
 @Issue("SECURITY-1186")
 public class FinalizerTest {
-    private static final String SCRIPT_HARNESS =
-            "class Global {\n" +
-            "  static volatile boolean result = false\n" +
-            "}\n" +
-            "class Test {\n" +
-            "  METHOD { Global.result = true; }\n" +
-            "}\n" +
-            "def t = new Test()\n" +
-            "t = null\n" +
-            // TODO: Flaky, can it be made more reliable?
-            "for (int i = 0; i < 10 && Global.result == false; i++) {\n" +
-            "  System.gc()\n" +
-            "  System.runFinalization()\n" +
-            "  Thread.sleep(100)\n" +
-            "}\n" +
-            "Global.result";
+	private static final String SCRIPT_HARNESS =
+		"class Global {\n" +
+			"  static volatile boolean result = false\n" +
+			"}\n" +
+			"class Test {\n" +
+			"  METHOD { Global.result = true; }\n" +
+			"}\n" +
+			"def t = new Test()\n" +
+			"t = null\n" +
+			// TODO: Flaky, can it be made more reliable?
+			"for (int i = 0; i < 10 && Global.result == false; i++) {\n" +
+			"  System.gc()\n" +
+			"  System.runFinalization()\n" +
+			"  Thread.sleep(100)\n" +
+			"}\n" +
+			"Global.result";
 
-    private GroovyShell sandboxedSh;
-    private GroovyShell unsandboxedSh;
+	private GroovyShell sandboxedSh;
+	private GroovyShell unsandboxedSh;
 
-    @Before
-    public void setUp() {
-        CompilerConfiguration cc = new CompilerConfiguration();
-        cc.addCompilationCustomizers(new ImportCustomizer().addImports("groovy.transform.PackageScope"));
-        cc.addCompilationCustomizers(new SandboxTransformer());
-        sandboxedSh = new GroovyShell(cc);
-        cc = new CompilerConfiguration();
-        cc.addCompilationCustomizers(new ImportCustomizer().addImports("groovy.transform.PackageScope"));
-        unsandboxedSh = new GroovyShell(cc);
-    }
+	@Before
+	public void setUp() {
+		CompilerConfiguration cc = new CompilerConfiguration();
+		cc.addCompilationCustomizers(new ImportCustomizer().addImports("groovy.transform.PackageScope"));
+		cc.addCompilationCustomizers(new SandboxTransformer());
+		sandboxedSh = new GroovyShell(cc);
+		cc = new CompilerConfiguration();
+		cc.addCompilationCustomizers(new ImportCustomizer().addImports("groovy.transform.PackageScope"));
+		unsandboxedSh = new GroovyShell(cc);
+	}
 
-    /**
-     * These scripts are forbidden by {@link SandboxTransformer#call} after the SECURITY-1186 fix.
-     */
-    @Test
-    public void testOverridingFinalizeForbidden() {
-        assertForbidden("@Override public void finalize()", true);
-        assertForbidden("protected void finalize()", true);
-        // Groovy's default access modifier is public.
-        assertForbidden("void finalize()", true);
-        assertForbidden("def void finalize()", true);
+	/**
+	 * These scripts are forbidden by {@link SandboxTransformer#call} after the SECURITY-1186 fix.
+	 */
+	@Test
+	public void testOverridingFinalizeForbidden() {
+		assertForbidden("@Override public void finalize()", true);
+		assertForbidden("protected void finalize()", true);
+		// Groovy's default access modifier is public.
+		assertForbidden("void finalize()", true);
+		assertForbidden("def void finalize()", true);
 
-        // Commented as it doesn't seem to be valid with Java 11 or Groovy 3.x
-        // This finalizer would be invoked despite having @PackageScope, so it must be forbidden.
-        // assertForbidden("@PackageScope void finalize()", true);
+		// Commented as it doesn't seem to be valid with Java 11 or Groovy 3.x
+		// This finalizer would be invoked despite having @PackageScope, so it must be forbidden.
+		// assertForbidden("@PackageScope void finalize()", true);
 
-        // Finalizers with only default parameters will cause a finalizer with no parameters to be
-        // introduced, so they must be forbidden.
-        assertForbidden("public void finalize(Object p1 = null)", true);
-        assertForbidden("public void finalize(Object p1 = null, Object p2 = null)", true);
-        assertForbidden("public void finalize(Object[] args = [null, null])", true);
-        assertForbidden("public void finalize(Object... args = [null, null])", true);
-    }
+		// Finalizers with only default parameters will cause a finalizer with no parameters to be
+		// introduced, so they must be forbidden.
+		assertForbidden("public void finalize(Object p1 = null)", true);
+		assertForbidden("public void finalize(Object p1 = null, Object p2 = null)", true);
+		assertForbidden("public void finalize(Object[] args = [null, null])", true);
+		assertForbidden("public void finalize(Object... args = [null, null])", true);
+	}
 
-    /**
-     * These scripts throw compilation failures even before the fix for SECURITY-1186 because they
-     * are improper overrides of {@link Object#finalize}.
-     */
-    @Test
-    public void testImproperOverrideOfFinalize() {
-        assertImproperOverride("private void finalize()");
-        assertImproperOverride("private static void finalize()");
-        assertImproperOverride("private Object finalize()");
-        assertImproperOverride("public Object finalize()");
-        assertImproperOverride("public Void finalize()");
-        assertImproperOverride("def finalize()");
-    }
+	/**
+	 * These scripts throw compilation failures even before the fix for SECURITY-1186 because they
+	 * are improper overrides of {@link Object#finalize}.
+	 */
+	@Test
+	public void testImproperOverrideOfFinalize() {
+		assertImproperOverride("private void finalize()");
+		assertImproperOverride("private static void finalize()");
+		assertImproperOverride("private Object finalize()");
+		assertImproperOverride("public Object finalize()");
+		assertImproperOverride("public Void finalize()");
+		assertImproperOverride("def finalize()");
+	}
 
-    /**
-     * These classes are allowed by {@link SandboxTransformer#call} because their finalize method
-     * won't be invoked outside of the sandbox by the JVM.
-     */
-    @Test
-    public void testFinalizePermittedAsNonOverride() {
-        assertFinalizerNotCalled("public static void finalize()");
-        assertFinalizerNotCalled("static void finalize()");
-        assertFinalizerNotCalled("protected static void finalize()");
-        assertFinalizerNotCalled("public void finalize(Object p)");
-        assertFinalizerNotCalled("protected void finalize(Object p)");
-        assertFinalizerNotCalled("private void finalize(Object p)");
-        assertFinalizerNotCalled("public void finalize(Object p1, Object p2 = null)");
-        assertFinalizerNotCalled("public void finalize(Object p1 = null, Object p2)");
-        assertFinalizerNotCalled("def void finalize(Map args)");
-    }
+	/**
+	 * These classes are allowed by {@link SandboxTransformer#call} because their finalize method
+	 * won't be invoked outside of the sandbox by the JVM.
+	 */
+	@Test
+	public void testFinalizePermittedAsNonOverride() {
+		assertFinalizerNotCalled("public static void finalize()");
+		assertFinalizerNotCalled("static void finalize()");
+		assertFinalizerNotCalled("protected static void finalize()");
+		assertFinalizerNotCalled("public void finalize(Object p)");
+		assertFinalizerNotCalled("protected void finalize(Object p)");
+		assertFinalizerNotCalled("private void finalize(Object p)");
+		assertFinalizerNotCalled("public void finalize(Object p1, Object p2 = null)");
+		assertFinalizerNotCalled("public void finalize(Object p1 = null, Object p2)");
+		assertFinalizerNotCalled("def void finalize(Map args)");
+	}
 
-    private void assertForbidden(String methodStub, boolean isDangerous) {
-        String script = SCRIPT_HARNESS.replace("METHOD", methodStub);
-        try {
-            sandboxedSh.evaluate(script);
-            fail("Should have failed");
-        } catch (MultipleCompilationErrorsException e) {
-            assertThat(e.getErrorCollector().getErrorCount(), equalTo(1));
-            Exception innerE = e.getErrorCollector().getException(0);
-            assertThat(innerE, instanceOf(SecurityException.class));
-            assertThat(innerE.getMessage(), containsString("Object.finalize()"));
-        }
-        Object actual = unsandboxedSh.evaluate(script);
-        assertThat(actual, equalTo((Object)isDangerous));
-    }
+	private void assertForbidden(String methodStub, boolean isDangerous) {
+		String script = SCRIPT_HARNESS.replace("METHOD", methodStub);
+		try {
+			sandboxedSh.evaluate(script);
+			fail("Should have failed");
+		} catch (MultipleCompilationErrorsException e) {
+			assertThat(e.getErrorCollector().getErrorCount(), equalTo(1));
+			Exception innerE = e.getErrorCollector().getException(0);
+			assertThat(innerE, instanceOf(SecurityException.class));
+			assertThat(innerE.getMessage(), containsString("Object.finalize()"));
+		}
+		Object actual = unsandboxedSh.evaluate(script);
+		assertThat(actual, equalTo((Object) isDangerous));
+	}
 
-    private void assertImproperOverride(String methodStub) {
-        try {
-            sandboxedSh.evaluate(SCRIPT_HARNESS.replace("METHOD", methodStub));
-            fail("Should have failed");
-        } catch (MultipleCompilationErrorsException e) {
-            assertThat(e.getErrorCollector().getErrorCount(), equalTo(1));
-            assertThat(e.getMessage(), anyOf(
-                    containsString("cannot override finalize in java.lang.Object"),
-                    containsString("incompatible with void in java.lang.Object")));
-        }
-    }
+	private void assertImproperOverride(String methodStub) {
+		try {
+			sandboxedSh.evaluate(SCRIPT_HARNESS.replace("METHOD", methodStub));
+			fail("Should have failed");
+		} catch (MultipleCompilationErrorsException e) {
+			assertThat(e.getErrorCollector().getErrorCount(), equalTo(1));
+			assertThat(e.getMessage(), anyOf(
+				containsString("cannot override finalize in java.lang.Object"),
+				containsString("incompatible with void in java.lang.Object")));
+		}
+	}
 
-    private void assertFinalizerNotCalled(String methodStub) {
-        Boolean actual = (Boolean)sandboxedSh.evaluate(SCRIPT_HARNESS.replace("METHOD", methodStub));
-        assertThat(actual, equalTo(false));
-    }
+	private void assertFinalizerNotCalled(String methodStub) {
+		Boolean actual = (Boolean) sandboxedSh.evaluate(SCRIPT_HARNESS.replace("METHOD", methodStub));
+		assertThat(actual, equalTo(false));
+	}
 
 }

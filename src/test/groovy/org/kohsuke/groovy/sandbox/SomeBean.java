@@ -6,20 +6,20 @@ package org.kohsuke.groovy.sandbox;
  * @author Kohsuke Kawaguchi
  */
 public class SomeBean {
-    private int x;
+	private int x;
 
-    public SomeBean(int x, int y) {
-        this.x = x;
-        this.y = y;
-    }
+	public SomeBean(int x, int y) {
+		this.x = x;
+		this.y = y;
+	}
 
-    int getX() {
-        return x;
-    }
+	int getX() {
+		return x;
+	}
 
-    void setX(int x) {
-        this.x = x;
-    }
+	void setX(int x) {
+		this.x = x;
+	}
 
-    public int y;
+	public int y;
 }

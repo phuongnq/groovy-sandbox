@@ -139,16 +139,16 @@
 		</plugins>
 	</build>
 
-<!--	<dependencyManagement>-->
-<!--		<dependencies>-->
-<!--			<dependency>-->
-<!--				<groupId>org.craftercms</groupId>-->
-<!--				<artifactId>craftercms</artifactId>-->
-<!--				<type>pom</type>-->
-<!--				<scope>import</scope>-->
-<!--			</dependency>-->
-<!--		</dependencies>-->
-<!--	</dependencyManagement>-->
+	<!--	<dependencyManagement>-->
+	<!--		<dependencies>-->
+	<!--			<dependency>-->
+	<!--				<groupId>org.craftercms</groupId>-->
+	<!--				<artifactId>craftercms</artifactId>-->
+	<!--				<type>pom</type>-->
+	<!--				<scope>import</scope>-->
+	<!--			</dependency>-->
+	<!--		</dependencies>-->
+	<!--	</dependencyManagement>-->
 
 	<dependencies>
 		<dependency>
